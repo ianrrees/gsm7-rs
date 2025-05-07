@@ -6,6 +6,7 @@ type Endianness = LittleEndian;
 
 const ESC: u8 = 0x1B;
 
+#[rustfmt::skip]
 static GSM7_CHARSET: [char; 128] = [
     '@', '£', '$', '¥', 'è', 'é', 'ù', 'ì',  'ò', 'Ç', '\n', 'Ø',    'ø', '\r', 'Å', 'å',
     'Δ', '_', 'Φ', 'Γ', 'Λ', 'Ω', 'Π', 'Ψ',  'Σ', 'Θ', 'Ξ',  '\x1B', 'Æ', 'æ',  'ß', 'É',
@@ -23,7 +24,9 @@ pub struct Gsm7Reader<R: io::Read> {
 
 impl<R: io::Read> Gsm7Reader<R> {
     pub fn new(reader: R) -> Self {
-        Self { reader: BitReader::new(reader) }
+        Self {
+            reader: BitReader::new(reader),
+        }
     }
 }
 
@@ -61,12 +64,10 @@ impl<R: io::Read> Iterator for Gsm7Reader<R> {
                 0x65 => '€',
                 _ => return Some(Err(io::ErrorKind::InvalidData.into())),
             }))
-        }
-        else {
+        } else {
             if let Some(c) = GSM7_CHARSET.get(septet as usize) {
                 Some(Ok(*c))
-            }
-            else {
+            } else {
                 Some(Err(io::ErrorKind::InvalidData.into()))
             }
         }
@@ -80,7 +81,10 @@ pub struct Gsm7Writer<W: io::Write> {
 
 impl<W: io::Write> Gsm7Writer<W> {
     pub fn new(writer: W) -> Self {
-        Self { writer: BitWriter::new(writer), counter: 0 }
+        Self {
+            writer: BitWriter::new(writer),
+            counter: 0,
+        }
     }
 
     pub fn write_bit(&mut self, bit: bool) -> io::Result<()> {
@@ -91,7 +95,7 @@ impl<W: io::Write> Gsm7Writer<W> {
 
     pub fn write<U>(&mut self, bits: u32, value: U) -> io::Result<()>
     where
-        U: Numeric
+        U: Numeric,
     {
         self.writer.write(bits, value)?;
         self.counter += bits as usize;
@@ -121,12 +125,13 @@ impl<W: io::Write> Gsm7Writer<W> {
             ']' => self.write_ext(0x3E)?,
             '|' => self.write_ext(0x40)?,
             '€' => self.write_ext(0x65)?,
-            _ => if let Some(b) = GSM7_CHARSET.iter().position(|&v| v == c) {
-                self.writer.write(7, b as u8)?;
-                self.counter += 7;
-            }
-            else {
-                return Err(io::ErrorKind::InvalidData.into());
+            _ => {
+                if let Some(b) = GSM7_CHARSET.iter().position(|&v| v == c) {
+                    self.writer.write(7, b as u8)?;
+                    self.counter += 7;
+                } else {
+                    return Err(io::ErrorKind::InvalidData.into());
+                }
             }
         }
         Ok(())
@@ -136,8 +141,7 @@ impl<W: io::Write> Gsm7Writer<W> {
         let remainder = self.counter % 8;
         if remainder == 7 {
             self.writer.write(7, 0x0D)?;
-        }
-        else if remainder != 0 {
+        } else if remainder != 0 {
             self.writer.byte_align()?;
         }
         Ok(self.writer.into_writer())
