@@ -23,6 +23,10 @@ let v = writer.into_writer()?;
 println!("v: {:?}", v);
 ```
 
+# no-std
+By default, gsm7 has an enabled `std` feature.  By specifiying
+`--no-default-features`, it can be used in a `no-std` context. 
+
 # License
 gsm7 is distributed under the MIT license.
 

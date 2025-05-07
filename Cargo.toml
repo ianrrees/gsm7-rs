@@ -8,4 +8,11 @@ license = "MIT"
 readme = "README.md"
 
 [dependencies]
-bitstream-io = "4.0.0"
+bitstream-io = {version = "4.0.0", no-default-features = true}
+
+# Same as used by bitstream-io
+core2 = "0.4"
+
+[features]
+default = ["std"]
+std = ["bitstream-io/std"]

@@ -1,4 +1,13 @@
+#![no_std]
+
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(feature = "std")]
 use std::io;
+
+#[cfg(not(feature = "std"))]
+use core2::io;
 
 use bitstream_io::{BitRead, BitReader, BitWrite, BitWriter, Integer, LittleEndian};
 
@@ -161,7 +170,9 @@ impl<W: io::Write> From<BitWriter<W, Endianness>> for Gsm7Writer<W> {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
+    extern crate std;
+
+    use std::{eprintln, io, string::String, vec, vec::Vec};
 
     use crate::{Gsm7Reader, Gsm7Writer};
 
