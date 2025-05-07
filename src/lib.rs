@@ -1,4 +1,37 @@
 #![no_std]
+//! # GSM-7 (aka GSM 03.38 or 3GPP 23.038) encoding and decoding in Rust
+//! 
+//! This crate implements the GSM 7-bit default alphabet and extension table of
+//! 3GPP TS 23.038 / GSM 03.38.
+//! 
+//! # Example
+//! 
+//! ## Decoding
+//! 
+//! ```rust
+//! let v = vec![84, 58, 157, 14];
+//! let reader = Gsm7Reader::new(io::Cursor::new(&v));
+//! let s = reader.collect::<io::Result<String>>()?;
+//! assert_eq!(&s, "Tttt");
+//! ```
+//! 
+//! ## Encoding
+//! 
+//! ```rust
+//! let mut writer = Gsm7Writer::new(Vec::new());
+//! writer.write_str("Hello")?;
+//! 
+//! let v = writer.into_writer()?;
+//! println!("v: {:?}", v);
+//! ```
+//! 
+//! # no-std
+//! By default, gsm7 has an enabled `std` feature.  By specifiying
+//! `--no-default-features`, it can be used in a `no-std` context. 
+//! 
+//! # License
+//! gsm7 is distributed under the MIT license.
+
 
 #[cfg(feature = "std")]
 extern crate std;
